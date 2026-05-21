@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Infinity Mathematics — Business Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --navy:#16284d; --navy2:#1f3864; --blue:#3b6fd6; --ink:#1c2433;
+  --muted:#8a93a6; --line:#e7ebf3; --bg:#eef1f7; --card:#ffffff;
+  --green:#1a8f55; --greenbg:#e7f6ee; --amber:#c77700; --amberbg:#fdf1de;
+  --red:#c0392b; --redbg:#fdecea; --violet:#7a3fb5;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Inter',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg);color:var(--ink);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.topbar{background:linear-gradient(100deg,var(--navy),var(--navy2));color:#fff;
+  padding:18px 26px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.topbar h1{margin:0;font-size:20px;font-weight:800;letter-spacing:.2px}
+.topbar .sub{font-size:12.5px;color:#aebbd6;margin-top:3px}
+.topbar .updated{font-size:12px;color:#c7d2e8;background:rgba(255,255,255,.08);
+  padding:6px 12px;border-radius:20px}
+.wrap{max-width:1300px;margin:0 auto;padding:22px 22px 60px}
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--muted);margin:26px 4px 12px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+  box-shadow:0 1px 2px rgba(20,40,77,.04)}
+.kpi .label{font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.kpi .value{font-size:26px;font-weight:800;margin-top:6px;color:var(--navy2);line-height:1.1}
+.kpi .sub{font-size:11.5px;color:var(--muted);margin-top:6px}
+.kpi.accent-green .value{color:var(--green)}
+.kpi.accent-red .value{color:var(--red)}
+.kpi.accent-amber .value{color:var(--amber)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+.charts{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.charts .span2{grid-column:1/-1}
+@media(max-width:900px){.charts{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;
+  box-shadow:0 1px 2px rgba(20,40,77,.04)}
+.card h3{margin:0 0 12px;font-size:14px;font-weight:700;color:var(--ink)}
+.chart-box{position:relative;height:260px}
+.chart-box.tall{height:300px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{border:1px solid var(--line);background:#fff;color:var(--ink);font-family:inherit;
+  font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;cursor:pointer;transition:.15s}
+.tab .n{color:var(--muted);font-weight:600;margin-left:6px}
+.tab.active{background:var(--navy2);color:#fff;border-color:var(--navy2)}
+.tab.active .n{color:#aebbd6}
+.controls{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.controls input,.controls select{font-family:inherit;font-size:13px;padding:8px 11px;
+  border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+.controls input{min-width:200px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:12px;max-height:560px}
+table{border-collapse:collapse;width:100%;font-size:13px}
+thead th{position:sticky;top:0;background:var(--navy2);color:#fff;font-weight:600;text-align:left;
+  padding:10px 12px;white-space:nowrap;cursor:pointer;user-select:none}
+thead th .arr{opacity:.5;font-size:10px;margin-left:4px}
+tbody td{padding:9px 12px;border-top:1px solid var(--line);white-space:nowrap}
+tbody tr:nth-child(even){background:#fafbfe}
+tbody tr:hover{background:#eef3fd}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.b-pending{background:var(--amberbg);color:var(--amber)}
+.b-delivered{background:var(--greenbg);color:var(--green)}
+.b-owe{background:var(--redbg);color:var(--red)}
+.muted{color:var(--muted)}
+.foot{margin-top:30px;color:var(--muted);font-size:12px;text-align:center}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div>
+    <h1>Infinity Mathematics — Business Dashboard</h1>
+    <div class="sub">IA / TOK / EE academic services · live performance view</div>
+  </div>
+  <div class="updated">Data as of 21 May 2026</div>
+</div>
+
+<div class="wrap">
+  <div class="section-title">Headline numbers</div>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="section-title">Trends &amp; breakdowns</div>
+  <div class="charts">
+    <div class="card span2"><h3>Revenue by month — billed vs collected vs margin</h3>
+      <div class="chart-box"><canvas id="cMonth"></canvas></div></div>
+    <div class="card"><h3>Margin by school</h3>
+      <div class="chart-box"><canvas id="cSchool"></canvas></div></div>
+    <div class="card"><h3>Orders by school</h3>
+      <div class="chart-box"><canvas id="cPie"></canvas></div></div>
+    <div class="card span2"><h3>Margin by order type</h3>
+      <div class="chart-box tall"><canvas id="cType"></canvas></div></div>
+  </div>
+
+  <div class="section-title">Work &amp; money to chase</div>
+  <div class="card">
+    <div class="tabs" id="tabs"></div>
+    <div class="controls" id="controls"></div>
+    <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  </div>
+
+  <div class="foot">Built from your order book · 50 orders · figures in INR (₹).
+   Snapshot dashboard — regenerate to refresh.</div>
+</div>
+
+<script>
+const ORDERS = [{"batch": 1, "month": "2025", "student": "Nihal", "school": "TBS", "type": "Math IA", "topic": "Traffic (AASL)", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 20000.0, "collected": 20000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Nitya", "school": "TBS", "type": "Math IA", "topic": "Tumour (AIHL)", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 20000.0, "collected": 20000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Rian", "school": "TBS", "type": "Math IA", "topic": "Ginnie (AAHL)", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 65000.0, "collected": 65000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Ranbir", "school": "TBS", "type": "Math IA", "topic": "Cricket (AIHL)", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 55000.0, "collected": 55000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Rian", "school": "TBS", "type": "Physics IA", "topic": "Physics", "deadline": "Delivered", "vendorCharges": 21000.0, "vendorPaid": 21000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Ivana", "school": "TBS", "type": "Math IA", "topic": "Inflation (AASL)", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Alina", "school": "TBS", "type": "Math IA", "topic": "GDP vs Fashion", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Jasmeh", "school": "TBS", "type": "Math IA", "topic": "Electrical Energy", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 70000.0, "collected": 70000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Rayan", "school": "TBS", "type": "Math IA", "topic": "Bitcoin Modelling", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 40000.0, "collected": 40000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Avantika", "school": "Sriram", "type": "Math IA", "topic": "Sleep vs Screen Time", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Haardik", "school": "Sriram", "type": "Math IA", "topic": "Mobile vs SAT", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 35000.0, "collected": 35000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mayra", "school": "Sriram", "type": "Math IA", "topic": "Spider Web", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 65000.0, "collected": 65000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Rian", "school": "TBS", "type": "TOK", "topic": "TOK Essay", "deadline": "Delivered", "vendorCharges": 12000.0, "vendorPaid": 12000.0, "billed": 20000.0, "collected": 20000.0, "status": "Delivered", "fb1": "NA", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Anhad", "school": "TBS", "type": "Math IA", "topic": "Ginie dev vs non", "deadline": "Delivered", "vendorCharges": 20000.0, "vendorPaid": 20000.0, "billed": 60000.0, "collected": 60000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Veer", "school": "TBS", "type": "Math IA", "topic": "Cup Temp Modelling", "deadline": "Delivered", "vendorCharges": 20000.0, "vendorPaid": 20000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Amaira", "school": "TBS", "type": "Math IA", "topic": "Population & Pollution", "deadline": "Delivered", "vendorCharges": 20000.0, "vendorPaid": 20000.0, "billed": 65000.0, "collected": 65000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Saisha", "school": "TBS", "type": "Math IA", "topic": "Coastline Paradox", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 60000.0, "collected": 60000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Ranbir", "school": "TBS", "type": "Physics IA", "topic": "Physics IA", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 40000.0, "collected": 40000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Shourya", "school": "Agleon", "type": "Math IA", "topic": "Shourya Modelling", "deadline": "Delivered", "vendorCharges": 25000.0, "vendorPaid": 25000.0, "billed": 110000.0, "collected": 110000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Gussesipe", "school": "Agleon", "type": "Math IA", "topic": "Brazilian Modelling", "deadline": "Delivered", "vendorCharges": 20000.0, "vendorPaid": 20000.0, "billed": 92000.0, "collected": 92000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mart", "school": "Agleon", "type": "Math IA", "topic": "Mart Senzer IA", "deadline": "Delivered", "vendorCharges": 22000.0, "vendorPaid": 22000.0, "billed": 90000.0, "collected": 90000.0, "status": "Delivered", "fb1": "Cancelled", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mart", "school": "Agleon", "type": "EE", "topic": "Mart Senzer EE", "deadline": "Delivered", "vendorCharges": 25000.0, "vendorPaid": 25000.0, "billed": 65000.0, "collected": 65000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Martina", "school": "Agleon", "type": "Math IA", "topic": "Tennis IA", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 72000.0, "collected": 72000.0, "status": "Delivered", "fb1": "Waiting", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Shourya", "school": "Agleon", "type": "EE", "topic": "Shourya EE", "deadline": "Delivered", "vendorCharges": 27500.0, "vendorPaid": 27500.0, "billed": 40000.0, "collected": 40000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Adiva", "school": "Uni", "type": "History IA", "topic": "Adiva History", "deadline": "Delivered", "vendorCharges": 12000.0, "vendorPaid": 12000.0, "billed": 0.0, "collected": 0.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mart", "school": "Agleon", "type": "BM IA", "topic": "Mart BM IA", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Pending", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Gilispie", "school": "Agleon", "type": "TOK", "topic": "Gilispie TOK", "deadline": "Delivered", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Samiha", "school": "TSRS", "type": "Math IA", "topic": "Samiha Math IA", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 40000.0, "collected": 40000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mart", "school": "Agleon", "type": "Math IA", "topic": "Mart Math IA 2", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 50000.0, "collected": 50000.0, "status": "Delivered", "fb1": "Pending", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Milana", "school": "Agleon", "type": "Math IA", "topic": "Milana Roller Coaster", "deadline": "Delivered", "vendorCharges": 22000.0, "vendorPaid": 22000.0, "billed": 54000.0, "collected": 54000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Odette", "school": "Agleon", "type": "Math IA", "topic": "Odette Corona", "deadline": "Delivered", "vendorCharges": 22000.0, "vendorPaid": 22000.0, "billed": 99000.0, "collected": 99000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Odette", "school": "Agleon", "type": "BM IA", "topic": "Odette BM IA", "deadline": "Delivered", "vendorCharges": 18000.0, "vendorPaid": 18000.0, "billed": 90000.0, "collected": 90000.0, "status": "Pending", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Diana", "school": "Agleon", "type": "Math IA", "topic": "Diana Math IA", "deadline": "Delivered", "vendorCharges": 22000.0, "vendorPaid": 22000.0, "billed": 98000.0, "collected": 98000.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Mert", "school": "Agleon", "type": "Math IA", "topic": "Mert Google Doc", "deadline": "Delivered", "vendorCharges": 5000.0, "vendorPaid": 5000.0, "billed": 0.0, "collected": 0.0, "status": "Delivered", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 1, "month": "2025", "student": "Odette", "school": "Agleon", "type": "BM IA", "topic": "BM IA Fast Odette", "deadline": "Delivered", "vendorCharges": 5000.0, "vendorPaid": 5000.0, "billed": 26500.0, "collected": 26500.0, "status": "Pending", "fb1": "Done", "fb2": "", "notes": ""}, {"batch": 2, "month": "Feb-26", "student": "Shivangini", "school": "Sriram", "type": "Math IA", "topic": "Integration", "deadline": "Delivered", "vendorCharges": 22000.0, "vendorPaid": 22000.0, "billed": 60000.0, "collected": 60000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Veyom", "school": "TBS", "type": "Chem IA", "topic": "Molar Mass", "deadline": "14-May-26", "vendorCharges": 36000.0, "vendorPaid": 36000.0, "billed": 70000.0, "collected": 25000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Veyom", "school": "TBS", "type": "Bio IA", "topic": "Plant", "deadline": "14-May-26", "vendorCharges": 35000.0, "vendorPaid": 35000.0, "billed": 70000.0, "collected": 25000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Aarav", "school": "TBS", "type": "EE", "topic": "BM EE (Nyka)", "deadline": "20-Jul-26", "vendorCharges": 35000.0, "vendorPaid": 15000.0, "billed": 100000.0, "collected": 50000.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Aarav", "school": "TBS", "type": "TOK", "topic": "TOK Objects", "deadline": "Closed", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 35000.0, "collected": 35000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Aarav", "school": "TBS", "type": "Chem IA", "topic": "Molar Mass", "deadline": "14-May-26", "vendorCharges": 30000.0, "vendorPaid": 30000.0, "billed": 50000.0, "collected": 15000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Mar-26", "student": "Aryan", "school": "Sriram", "type": "TOK", "topic": "TOK English", "deadline": "Closed", "vendorCharges": 15000.0, "vendorPaid": 15000.0, "billed": 25000.0, "collected": 25000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Apr-26", "student": "Aryan", "school": "Sriram", "type": "Chem IA", "topic": "Germination", "deadline": "7-May-26", "vendorCharges": 30000.0, "vendorPaid": 30000.0, "billed": 50000.0, "collected": 25000.0, "status": "Delivered", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Apr-26", "student": "Aryan", "school": "Sriram", "type": "Physics IA", "topic": "Wine Glass Resonator", "deadline": "31-May-26", "vendorCharges": 25000.0, "vendorPaid": 15000.0, "billed": 58000.0, "collected": 29000.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "Apr-26", "student": "Dhruv", "school": "Sriram", "type": "Math IA", "topic": "Tetrahedron", "deadline": "25-May-26", "vendorCharges": 20000.0, "vendorPaid": 0.0, "billed": 55000.0, "collected": 0.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "May-26", "student": "Aryan", "school": "Sriram", "type": "Math IA", "topic": "Curved Roof Shells", "deadline": "10-Jun-26", "vendorCharges": 20000.0, "vendorPaid": 0.0, "billed": 50000.0, "collected": 0.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "May-26", "student": "Siona", "school": "Sriram", "type": "Math IA", "topic": "India Population", "deadline": "10-Jun-26", "vendorCharges": 20000.0, "vendorPaid": 0.0, "billed": 55000.0, "collected": 0.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "May-26", "student": "Arshi Baid", "school": "JPIS", "type": "Math IA", "topic": "Pringles", "deadline": "15-Jun-26", "vendorCharges": 20000.0, "vendorPaid": 0.0, "billed": 70000.0, "collected": 35000.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 2, "month": "May-26", "student": "Aryaman", "school": "TBS", "type": "Math IA", "topic": "Topic AI SL", "deadline": "TBD", "vendorCharges": 20000.0, "vendorPaid": 0.0, "billed": 60000.0, "collected": 30000.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}, {"batch": 3, "month": "May-26", "student": "Aarav", "school": "TBS", "type": "Eco Commentary", "topic": "Eco Commentary", "deadline": "TBD", "vendorCharges": 15000.0, "vendorPaid": 0.0, "billed": 30000.0, "collected": 0.0, "status": "Pending", "fb1": "", "fb2": "", "notes": ""}];
+ORDERS.forEach(o=>{o.vendorPending=o.vendorCharges-o.vendorPaid;o.leftover=o.billed-o.collected;
+  o.margin=o.billed-o.vendorCharges;o.marginPct=o.billed?o.margin/o.billed:0;});
+const inr=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const pct=n=>(n*100).toFixed(1)+'%';
+const sum=(a,f)=>a.reduce((s,x)=>s+f(x),0);
+const NAVY='#1f3864',BLUE='#3b6fd6',GREEN='#1a8f55',AMBER='#e0922f',VIOLET='#7a3fb5',
+  TEAL='#2b9bb3',RED='#c0392b',SLATE='#8a93a6';
+const PAL=[BLUE,RED,GREEN,VIOLET,TEAL,AMBER,'#d36ba6','#5a6b8c'];
+
+// ---- KPIs ----
+const billed=sum(ORDERS,o=>o.billed),collected=sum(ORDERS,o=>o.collected),
+  outstanding=billed-collected,vc=sum(ORDERS,o=>o.vendorCharges),vp=sum(ORDERS,o=>o.vendorPaid),
+  margin=billed-vc,vendPend=vc-vp,
+  open=ORDERS.filter(o=>o.status==='Pending').length,
+  b1=sum(ORDERS.filter(o=>o.batch===1),o=>o.margin),
+  b2=sum(ORDERS.filter(o=>o.batch>=2),o=>o.margin),
+  cnt=k=>ORDERS.filter(o=>o.batch===k).length;
+const kpis=[
+  {l:'Total Orders',v:ORDERS.length,s:`Batch 1: ${cnt(1)} · Batch 2: ${cnt(2)} · Batch 3: ${cnt(3)}`},
+  {l:'Total Billed',v:inr(billed),s:'Billed to students'},
+  {l:'Collected',v:inr(collected),s:'Received',c:'accent-green'},
+  {l:'Outstanding',v:inr(outstanding),s:'Students still owe you',c:'accent-red'},
+  {l:'Your Margin',v:inr(margin),s:pct(margin/billed)+' average',c:'accent-green'},
+  {l:'Open Orders',v:open,s:'Status = Pending',c:'accent-amber'},
+  {l:'Vendor Paid',v:inr(vp),s:'Settled with tutors'},
+  {l:'Vendor Pending',v:inr(vendPend),s:'You still owe tutors',c:'accent-amber'},
+  {l:'Batch 1 Margin',v:inr(b1),s:'2025 cohort'},
+  {l:'Batch 2+ Margin',v:inr(b2),s:'2026 cohort'},
+];
+document.getElementById('kpis').innerHTML=kpis.map(k=>
+  `<div class="kpi ${k.c||''}"><div class="label">${k.l}</div>
+   <div class="value">${k.v}</div><div class="sub">${k.s}</div></div>`).join('');
+
+// ---- aggregations ----
+function groupBy(key){const m={};ORDERS.forEach(o=>{const g=m[o[key]]||(m[o[key]]={n:0,billed:0,collected:0,vc:0,margin:0});
+  g.n++;g.billed+=o.billed;g.collected+=o.collected;g.vc+=o.vendorCharges;g.margin+=o.margin;});return m;}
+function monthKey(m){if(/^\d{4}$/.test(m))return +m*12;const mm={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+  const p=m.split('-');return p.length===2?(2000+ +p[1])*12+(mm[p[0]]||0):999999;}
+const byMonth=groupBy('month'),months=Object.keys(byMonth).sort((a,b)=>monthKey(a)-monthKey(b));
+const bySchool=groupBy('school'),schools=Object.keys(bySchool).sort((a,b)=>bySchool[b].margin-bySchool[a].margin);
+const byType=groupBy('type'),types=Object.keys(byType).sort((a,b)=>byType[b].margin-byType[a].margin);
+
+const gridClr='#eef0f5';
+Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.color='#6b7488';
+const money={ticks:{callback:v=>'₹'+(v/1000)+'k'},grid:{color:gridClr}};
+
+new Chart(cMonth,{type:'bar',data:{labels:months,datasets:[
+  {label:'Billed',data:months.map(m=>byMonth[m].billed),backgroundColor:BLUE},
+  {label:'Collected',data:months.map(m=>byMonth[m].collected),backgroundColor:GREEN},
+  {label:'Margin',data:months.map(m=>byMonth[m].margin),backgroundColor:AMBER}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
+   tooltip:{callbacks:{label:c=>c.dataset.label+': '+inr(c.raw)}}},
+   scales:{y:money,x:{grid:{display:false}}}}});
+
+new Chart(cSchool,{type:'bar',data:{labels:schools,datasets:[{label:'Margin',
+  data:schools.map(s=>bySchool[s].margin),backgroundColor:schools.map((_,i)=>PAL[i%PAL.length])}]},
+  options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>inr(c.raw)}}},scales:{y:money,x:{grid:{display:false}}}}});
+
+new Chart(cPie,{type:'doughnut',data:{labels:schools,datasets:[{data:schools.map(s=>bySchool[s].n),
+  backgroundColor:schools.map((_,i)=>PAL[i%PAL.length])}]},
+  options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'right'},
+   tooltip:{callbacks:{label:c=>c.label+': '+c.raw+' orders'}}}}});
+
+new Chart(cType,{type:'bar',data:{labels:types,datasets:[{label:'Margin',
+  data:types.map(t=>byType[t].margin),backgroundColor:types.map((_,i)=>PAL[i%PAL.length])}]},
+  options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},
+   tooltip:{callbacks:{label:c=>inr(c.raw)+'  ·  '+byType[c.label].n+' orders'}}},
+   scales:{x:money,y:{grid:{display:false}}}}});
+
+// ---- tables ----
+function badge(s){const cl=s==='Delivered'?'b-delivered':s==='Pending'?'b-pending':'b-owe';
+  return `<span class="pill ${cl}">${s||'—'}</span>`;}
+const collections=ORDERS.filter(o=>o.leftover>0).sort((a,b)=>b.leftover-a.leftover);
+const deadlines=ORDERS.filter(o=>o.status==='Pending'&&o.deadline!=='Delivered'&&o.deadline!=='Closed');
+const vendor=ORDERS.filter(o=>o.vendorPending>0).sort((a,b)=>b.vendorPending-a.vendorPending);
+
+const VIEWS={
+  collections:{label:'💰 Collections Due',n:collections.length,rows:collections,
+    cols:[['Student','student'],['School','school'],['Type','type'],['Topic','topic'],
+      ['Billed','billed','m'],['Collected','collected','m'],['Leftover','leftover','m'],
+      ['Batch','batch','n'],['Status','status','badge']]},
+  deadlines:{label:'📅 Deadlines',n:deadlines.length,rows:deadlines,
+    cols:[['Student','student'],['School','school'],['Type','type'],['Topic','topic'],
+      ['Deadline','deadline'],['Vendor Pending','vendorPending','m'],['Billed','billed','m'],
+      ['Leftover','leftover','m'],['Status','status','badge']]},
+  vendor:{label:'🧾 Vendor Settlements',n:vendor.length,rows:vendor,
+    cols:[['Student','student'],['School','school'],['Type','type'],['Topic','topic'],
+      ['Vendor Charges','vendorCharges','m'],['Vendor Paid','vendorPaid','m'],
+      ['Vendor Pending','vendorPending','m']]},
+  all:{label:'📋 All Orders',n:ORDERS.length,rows:ORDERS,
+    cols:[['Batch','batch','n'],['Month','month'],['Student','student'],['School','school'],
+      ['Type','type'],['Topic','topic'],['Deadline','deadline'],['Billed','billed','m'],
+      ['Collected','collected','m'],['Leftover','leftover','m'],['Margin','margin','m'],
+      ['Margin %','marginPct','p'],['Status','status','badge']]},
+};
+let cur='collections',sortCol=null,sortDir=1,q='',schoolFilter='';
+const tabsEl=document.getElementById('tabs');
+tabsEl.innerHTML=Object.entries(VIEWS).map(([k,v])=>
+  `<button class="tab" data-k="${k}">${v.label}<span class="n">${v.n}</span></button>`).join('');
+tabsEl.onclick=e=>{const b=e.target.closest('.tab');if(!b)return;cur=b.dataset.k;sortCol=null;q='';schoolFilter='';render();};
+
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t.dataset.k===cur));
+  const v=VIEWS[cur];
+  const allSchools=[...new Set(ORDERS.map(o=>o.school))].sort();
+  document.getElementById('controls').innerHTML=
+    `<input id="q" placeholder="Search…" value="${q}">
+     <select id="sf"><option value="">All schools</option>
+       ${allSchools.map(s=>`<option ${s===schoolFilter?'selected':''}>${s}</option>`).join('')}</select>`;
+  document.getElementById('q').oninput=e=>{q=e.target.value;draw();};
+  document.getElementById('sf').onchange=e=>{schoolFilter=e.target.value;draw();};
+  draw();
+}
+function draw(){
+  const v=VIEWS[cur];const cols=v.cols;
+  const thead=document.querySelector('#tbl thead'),tb=document.querySelector('#tbl tbody');
+  thead.innerHTML='<tr>'+cols.map((c,i)=>{const numeric=c[2]==='m'||c[2]==='n'||c[2]==='p';
+    const arr=sortCol===i?(sortDir>0?'▲':'▼'):'';
+    return `<th class="${numeric?'num':''}" data-i="${i}">${c[0]}<span class="arr">${arr}</span></th>`;}).join('')+'</tr>';
+  thead.querySelectorAll('th').forEach(th=>th.onclick=()=>{const i=+th.dataset.i;
+    if(sortCol===i)sortDir*=-1;else{sortCol=i;sortDir=1;}draw();});
+  let rows=v.rows.slice();
+  if(schoolFilter)rows=rows.filter(o=>o.school===schoolFilter);
+  if(q){const s=q.toLowerCase();rows=rows.filter(o=>cols.some(c=>(''+o[c[1]]).toLowerCase().includes(s)));}
+  if(sortCol!==null){const key=cols[sortCol][1];rows.sort((a,b)=>{
+    let x=a[key],y=b[key];if(typeof x==='number'&&typeof y==='number')return (x-y)*sortDir;
+    return (''+x).localeCompare(''+y)*sortDir;});}
+  tb.innerHTML=rows.map(o=>'<tr>'+cols.map(c=>{const t=c[2],val=o[c[1]];
+    if(t==='m')return `<td class="num">${val?inr(val):'—'}</td>`;
+    if(t==='p')return `<td class="num">${(val*100).toFixed(1)}%</td>`;
+    if(t==='n')return `<td class="num">${val}</td>`;
+    if(t==='badge')return `<td>${badge(val)}</td>`;
+    return `<td>${val||'—'}</td>`;}).join('')+'</tr>').join('')
+    || `<tr><td colspan="${cols.length}" class="muted" style="text-align:center;padding:24px">No matching rows</td></tr>`;
+}
+render();
+</script>
+</body>
+</html>
