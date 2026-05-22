@@ -87,7 +87,7 @@ td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
 
   <div class="section-title">Trends &amp; breakdowns</div>
   <div class="charts">
-    <div class="card span2"><h3>Revenue by month — billed vs collected vs margin</h3>
+    <div class="card span2"><h3>Revenue by month, 2026 — billed vs collected vs margin</h3>
       <div class="chart-box"><canvas id="cMonth"></canvas></div></div>
     <div class="card"><h3>Margin by school</h3>
       <div class="chart-box"><canvas id="cSchool"></canvas></div></div>
@@ -156,10 +156,11 @@ const gridClr='#eef0f5';
 Chart.defaults.font.family="'Inter',sans-serif";Chart.defaults.color='#6b7488';
 const money={ticks:{callback:v=>'₹'+(v/1000)+'k'},grid:{color:gridClr}};
 
-new Chart(cMonth,{type:'bar',data:{labels:months,datasets:[
-  {label:'Billed',data:months.map(m=>byMonth[m].billed),backgroundColor:BLUE},
-  {label:'Collected',data:months.map(m=>byMonth[m].collected),backgroundColor:GREEN},
-  {label:'Margin',data:months.map(m=>byMonth[m].margin),backgroundColor:AMBER}]},
+const cmonths=months.filter(m=>m!=='2025');
+new Chart(cMonth,{type:'bar',data:{labels:cmonths,datasets:[
+  {label:'Billed',data:cmonths.map(m=>byMonth[m].billed),backgroundColor:BLUE},
+  {label:'Collected',data:cmonths.map(m=>byMonth[m].collected),backgroundColor:GREEN},
+  {label:'Margin',data:cmonths.map(m=>byMonth[m].margin),backgroundColor:AMBER}]},
   options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'},
    tooltip:{callbacks:{label:c=>c.dataset.label+': '+inr(c.raw)}}},
    scales:{y:money,x:{grid:{display:false}}}}});
